@@ -2,12 +2,41 @@
 <html lang="en">
 <head>
     <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
     <script type="text/babel" >
         "use strict";
     
+		let socket;
+		
+		const attachSocketEvents = (sock) => {
+			sock.on('serverStartTime', (data) => {
+				const timeSpan = document.querySelector("#serverTime");
+				timeSpan.innerHTML = data.time;
+			});
+			
+			sock.on('updateClicks', (data) => {
+				const numClicks = document.querySelector("#numClicks");
+				numClicks.innerHTML = data.numClicks;
+			});
+			
+			const sendClick = document.querySelector("#sendClick");
+			sendClick.addEventListener('click', (e) => {
+				sock.emit('addClicks', {clicks: 1});
+			});
+		};
+		
+		const init = () => {
+			socket = io.connect();
+			attachSocketEvents(socket);
+			socket.emit('requestServerStartTime');
+		};
+		
+		window.onload = init;
+	
     </script>
 </head>
 <body>
-
+	<p>Number of button clicks since server start time (<span id="serverTime">?</span>): <b><span id="numClicks">?</span></b></p>
+	<button id="sendClick">Click me!</button>
 </body>
 </html>
